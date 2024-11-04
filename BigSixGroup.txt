@@ -1,0 +1,111 @@
+import random
+def give_rules():
+    print("\nWelcome to the Big Six Game!")
+    print("Rules:")     
+    print("- You can bet on the following sections: $1, $2, $5, $10, $20, Joker, Logo.") 
+    print("- The payouts vary based on the section you bet on.") 
+    print("- Minimum bet is $1, and the payout for each section is as follows:") 
+    print(" $1 -> 1:1, $2 -> 2:1, $5 -> 5:1, $10 -> 10:1, $20 -> 20:1, Joker -> 40:1, Logo -> 40:1") 
+    print("- You will win if the wheel lands on the symbol you bet on.\n")
+
+#Ask player for their balance going in
+def Starting_Bal():
+    while True:
+        try:
+            balance = float(input("Please enter the amount of money you have (minimum $1): $"))
+            if balance > 0:
+                return balance
+            else:
+                print("Please enter a positive amount greater than 0.")
+        except ValueError:
+            print("Invalid input. Please enter a valid number.")
+
+#Get the players bet and symbol and then subtract bet from their bal
+def Player_Bet():
+    global balance
+    symbols = []  # List to store the symbols the player is betting on
+    bets = []     # List to store the corresponding bet amounts
+    while True:
+        symbol = input("\nWhich section would you want to bet on ($1, $2, $5, $10, $20, Joker, Logo)? ").capitalize()
+        if symbol in ["$1", "$2", "$5", "$10", "$20", "Joker", "Logo"]:
+            try:
+                bet = float(input(f"How much would you want to bet on {symbol}? $"))
+                if bet >= 1 and bet <= 100 and bet <= balance:
+                    symbols.append(symbol)
+                    bets.append(bet)
+                    balance -= bet
+                    more_bets = input("do you mind placing another bet? (yes/no): ").lower()
+                    if more_bets == "no":
+                        break
+                else:
+                    print("\nmake sure bet must be between 1 and 100, and within your current balance.")
+            except ValueError:
+                print("\nInvalid input :(. Please enter a valid number for the bet  to work.")
+        else:
+            print("\nInvalid section :(. Please make sure to bet on one of the following: $1, $2, $5, $10, $20, Joker, Logo.")
+
+    return symbols, bets
+
+#Spins the wheel
+def Wheel(): 
+    sections = ["$1", "$1", "$1", "$1", "$1", "$1", "$1", "$1", "$1", "$1", "$1", "$1", "$1", "$2", "$2", "$2", "$2", "$2", "$2", "$5", "$5", "$5", "$5", "$10", "$10", "$10", "$20", "$20", "Joker", "Logo"] 
+    return random.choice(sections)
+
+#Checks the players symbol against the wheel symbol to find odds
+def Win_Payout(wheel_symbol, single_bet):
+        if wheel_symbol == "$1":
+            payout = single_bet * 1 + single_bet
+        elif wheel_symbol == "$2":
+            payout = single_bet * 2 + single_bet
+        elif wheel_symbol == "$5":
+            payout = single_bet * 5 + single_bet
+        elif wheel_symbol == "$10":
+            payout = single_bet * 10 + single_bet
+        elif wheel_symbol == "$20":
+            payout = single_bet * 20 + single_bet
+        elif wheel_symbol == "Joker":
+            payout = single_bet * 40 + single_bet
+        elif wheel_symbol == "Logo":
+            payout = single_bet * 40 + single_bet
+        return payout
+
+#Checks if wheel symbol matches and then adds the payout odds to the balance
+def Payout(symbol, bet, wheel_symbol):
+    payout = 0
+    for x in symbol:
+        single_symbol = symbol.pop()
+        single_bet = bet.pop()
+        if single_symbol == wheel_symbol:
+            payout += Win_Payout(wheel_symbol, single_bet)
+    return payout
+
+#Tells player their balance then asks them to go again
+def player_info_update(payout, wheel_symbol, balance):
+    if payout >= 0:
+        print(f"\nThe wheel landed on {wheel_symbol}. You won ${payout}. Your new balance is ${balance}.")
+    else:
+        print(f"\nThe wheel landed on {wheel_symbol}. You lost ${-payout}. Your new balance is ${balance}.")
+
+    while True:
+        play_again = input("Do you want to play again? (yes/no): ").lower()
+        if play_again == 'yes':
+            return True
+        elif play_again == 'no':
+            return False
+        else:
+            print("Please enter 'yes' or 'no'.")
+
+balance = Starting_Bal()  # Ask player to input the money they have (Globalized value)
+
+def Main():
+    give_rules()
+    global balance
+    go_again = True
+    while balance > 1 and go_again == True:
+        symbols, bets = Player_Bet()
+        wheel_symbol = Wheel()
+        payout = Payout(symbols, bets, wheel_symbol)
+        balance += payout
+        go_again = player_info_update(payout, wheel_symbol, balance)
+
+Main()
